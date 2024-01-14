@@ -1,9 +1,9 @@
 MACHINES = {
   :"kernel-update" => {
-              :box_name => "generic/centos8s",
-              :box_version => "4.3.4",
-              :cpus => 4,
-              :memory => 8192,
+              :box_name => "ivanegorov/centos8-kernel6",
+              :box_version => "1.0",
+              :cpus => 1,
+              :memory => 2048,
             }
 }
 
