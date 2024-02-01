@@ -1,3 +1,4 @@
 .vagrant/
 *.box
 *.swp
+*.vdi
