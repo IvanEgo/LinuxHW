@@ -27,7 +27,7 @@ https://drive.google.com/file/d/1phsvBYkiRPVrDG0EXagy-TF4P5y9XOAX/view
 
 vagrant up  
 vagrant ssh  
-[vagrant@otuslinux ~]$ sudo lsblk  
+[vagrant@otuslinux ~]$ lsblk  
 _NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT  
 sda      8:0    0   40G  0 disk  
 `-sda1   8:1    0   40G  0 part /  
@@ -69,13 +69,13 @@ mdadm -D /dev/md0
        5       8       96        5      active sync set-B   /dev/sdg_  
 
 ### Прописываем рейд в конф:  
-sudo mkdir /etc/mdadm  
-echo "DEVICE partitions" | sudo tee /etc/mdadm/mdadm.conf  
-sudo mdadm --detail --scan --verbose | awk '/ARRAY/ {print}' | sudo tee --append /etc/mdadm/mdadm.conf  
+mkdir /etc/mdadm  
+echo "DEVICE partitions" > /etc/mdadm/mdadm.conf  
+mdadm --detail --scan --verbose | awk '/ARRAY/ {print}' >> /etc/mdadm/mdadm.conf  
 
 cat /etc/mdadm/mdadm.conf  
-   _DEVICE partitions  
-   ARRAY /dev/md0 level=raid10 num-devices=6 metadata=1.2 name=otuslinux:0 UUID=309d00c7:1932ac5f:134fa753:446dbd21_  
+   DEVICE partitions  
+   ARRAY /dev/md0 level=raid10 num-devices=6 metadata=1.2 name=otuslinux:0 UUID=309d00c7:1932ac5f:134fa753:446dbd21  
 
 ### Ломаем-чиним RAID:  
 mdadm /dev/md0 --fail /dev/sde  
@@ -130,11 +130,11 @@ fdisk -l
  5      1219584      1520639    147M  Microsoft basic primary 
 
 Создаем файловую систему:  
-for i in $(seq 1 5); do sudo mkfs.ext4 /dev/md0p$i; done   
+for i in $(seq 1 5); do mkfs.ext4 /dev/md0p$i; done   
 
 И монтируем по каталогам:  
 mkdir -p /raid/part{1,2,3,4,5}  
-for i in $(seq 1 5); do sudo mount /dev/md0p$i /raid/part$i; done  
+for i in $(seq 1 5); do mount /dev/md0p$i /raid/part$i; done  
 
 df -h  
 Filesystem      Size  Used Avail Use% Mounted on  
