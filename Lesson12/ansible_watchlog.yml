@@ -1,0 +1,72 @@
+- name: Настроить watchlog сервис
+  hosts: vmlesson12
+  become: yes
+  tasks:
+    - name: Создать конфигурационный файл watchlog сервиса
+      ansible.builtin.copy:
+        content: |
+          # Configuration file for my watchlog service
+
+          # File and word in that file that we will be monitored
+          WORD="ALERT"
+          LOG=/var/log/watchlog.log
+        dest: /etc/sysconfig/watchlog
+
+    - name: Создать лог файл с некоторым содержимым
+      ansible.builtin.copy:
+        content: |
+          Log Entry 1
+          Log Entry 2 - ALERT!
+          Log Entry 3
+        dest: /var/log/watchlog.log
+
+    - name: Создать скрипт
+      ansible.builtin.copy:
+        content: |
+          #!/bin/bash
+
+          WORD=$1
+          LOG=$2
+          DATE=`date`
+
+          if grep $WORD $LOG &> /dev/null
+          then
+          logger "$DATE: I found word, Master!"
+          else
+          exit 0
+          fi
+        dest: /opt/watchlog.sh
+        mode: +x
+
+    - name: Создать юнит для watchlog сервиса
+      ansible.builtin.copy:
+        content: |
+          [Unit]
+          Description=My watchlog service
+
+          [Service]
+          Type=oneshot
+          EnvironmentFile=/etc/sysconfig/watchlog
+          ExecStart=/opt/watchlog.sh $WORD $LOG
+        dest: /etc/systemd/system/watchlog.service
+
+    - name: Создать юнит для watchlog таймера
+      ansible.builtin.copy:
+        content: |
+          [Unit]
+          Description=Run watchlog script every 30 second
+
+          [Timer]
+          # Run every 30 second
+          OnCalendar=*-*-* *:*:00,30
+          Unit=watchlog.service
+
+          [Install]
+          WantedBy=multi-user.target
+        dest: /etc/systemd/system/watchlog.timer
+
+    - name: Reload systemd daemon
+      systemd:
+        daemon_reload: yes
+
+

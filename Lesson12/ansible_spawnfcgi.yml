@@ -1,0 +1,54 @@
+- name: Настроить spawn-fcgi сервис
+  hosts: vmlesson12
+  become: yes
+  tasks:
+    - name: Установить EPEL repo
+      ansible.builtin.yum: 
+        name:
+          - epel-release
+        state: latest
+
+    - name: Установить необходимые пакеты
+      ansible.builtin.yum: 
+        name:
+          - spawn-fcgi
+          - php
+          - php-cli
+          - mod_fcgid
+          - httpd
+        state: latest
+
+    - name: Создать конфигурационный файл spawnfcgi сервиса
+      ansible.builtin.copy:
+        content: |
+          # You must set some working options before the "spawn-fcgi" service will work.
+          # If SOCKET points to a file, then this file is cleaned up by the init script.
+          #
+          # See spawn-fcgi(1) for all possible options.
+          #
+          # Example :
+          SOCKET=/var/run/php-fcgi.sock
+          OPTIONS="-u apache -g apache -s $SOCKET -S -M 0600 -C 32 -F 1 -- /usr/bin/php-cgi"
+        dest: /etc/sysconfig/spawn-fcgi
+
+    - name: Создать юнит для spawnfcgi сервиса
+      ansible.builtin.copy:
+        content: |
+          [Unit]
+          Description=Spawn-fcgi startup service by Otus
+          After=network.target
+
+          [Service]
+          Type=simple
+          PIDFile=/var/run/spawn-fcgi.pid
+          EnvironmentFile=/etc/sysconfig/spawn-fcgi
+          ExecStart=/usr/bin/spawn-fcgi -n $OPTIONS
+          KillMode=process
+
+          [Install]
+          WantedBy=multi-user.target
+        dest: /etc/systemd/system/spawn-fcgi.service
+
+    - name: Reload systemd daemon
+      systemd:
+        daemon_reload: yes

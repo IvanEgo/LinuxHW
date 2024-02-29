@@ -1,0 +1,57 @@
+- name: Дополнить httpd возможностью запустить несколько инстансов сервера с разными конфигами
+  hosts: vmlesson12
+  become: yes
+  tasks:
+    - name: Создать шаблон httpd@.service
+      ansible.builtin.copy:
+        content: |
+          [Unit]
+          Description=The Apache HTTP Server
+          Wants=httpd-init.service
+
+          After=network.target remote-fs.target nss-lookup.target httpd-init.service
+
+          Documentation=man:httpd.service(8)
+
+          [Service]
+          Type=notify
+          Environment=LANG=C
+          EnvironmentFile=/etc/sysconfig/httpd-%I
+          ExecStart=/usr/sbin/httpd $OPTIONS -DFOREGROUND
+          ExecReload=/usr/sbin/httpd $OPTIONS -k graceful
+          # Send SIGWINCH for graceful stop
+          KillSignal=SIGWINCH
+          KillMode=mixed
+          PrivateTmp=true
+
+          [Install]
+          WantedBy=multi-user.target
+        dest: /usr/lib/systemd/system/httpd@.service
+
+    - name: Reload systemd daemon
+      systemd:
+        daemon_reload: yes
+
+    - name: Создать файл окружения httpd-first, в котором задается опция для запуска веб-сервера с конфигурационным файлом first.conf
+      ansible.builtin.copy:
+        content: |
+          # /etc/sysconfig/httpd-first
+          OPTIONS=-f conf/first.conf
+        dest: /etc/sysconfig/httpd-first
+
+    - name: Создать файл окружения httpd-second, в котором задается опция для запуска веб-сервера с конфигурационным файлом second.conf
+      ansible.builtin.copy:
+        content: |
+          # /etc/sysconfig/httpd-second
+          OPTIONS=-f conf/second.conf
+        dest: /etc/sysconfig/httpd-second
+
+    - name: Создать first.conf
+      ansible.builtin.copy:
+        src: httpd/first.conf       
+        dest: /etc/httpd/conf/first.conf
+    
+    - name: Создать second.conf
+      ansible.builtin.copy:
+        src: httpd/second.conf
+        dest: /etc/httpd/conf/second.conf

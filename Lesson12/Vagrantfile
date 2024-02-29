@@ -1,0 +1,31 @@
+# -*- mode: ruby -*- 
+# vi: set ft=ruby : vsa
+Vagrant.configure(2) do |config|
+  config.vm.box = "centos/7"
+  config.vm.box_version = "2004.01"
+
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 1024
+    v.cpus = 1
+  end
+  
+  config.vm.define "vmlesson12" do |wl|
+    wl.vm.hostname = "vmlesson12"
+    
+    wl.vm.provision "ansible" do |ansible|
+      ansible.playbook = "ansible_watchlog.yml"
+      ansible.verbose = "v"
+    end
+
+    wl.vm.provision "ansible" do |ansible|
+      ansible.playbook = "ansible_spawnfcgi.yml"
+      ansible.verbose = "v"
+    end
+
+    wl.vm.provision "ansible" do |ansible|
+      ansible.playbook = "ansible_httpd.yml"
+      ansible.verbose = "v"
+    end
+  end
+
+end
