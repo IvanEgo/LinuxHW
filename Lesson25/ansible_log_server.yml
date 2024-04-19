@@ -1,0 +1,69 @@
+- name: Настройка сервера логов
+  hosts: log-server
+  become: yes
+  tasks:
+    - name: Устанавливаем rsyslog
+      ansible.builtin.yum:
+        name: rsyslog
+        state: latest
+
+    - name: Устанавливаем chrony
+      ansible.builtin.yum:
+        name: chrony
+        state: latest
+
+    - name: Запускаем сервис chronyd
+      ansible.builtin.service:
+        name: chronyd
+        state: started
+
+    - name: Открываем tcp порт 514
+      ansible.posix.firewalld:
+        port: 514/tcp
+        permanent: true
+        state: enabled
+ 
+    - name: Открываем udp порт 514
+      ansible.posix.firewalld:
+        port: 514/udp
+        permanent: true
+        state: enabled
+      
+    - name: Перезапускаем сервис firewalld
+      ansible.builtin.service:
+        name: firewalld
+        state: restarted
+
+    - name: Устанавливаем libselinux-python
+      ansible.builtin.yum:
+        name: libselinux-python
+        state: latest
+
+    - name: Устанавливаем policycoreutils-python
+      ansible.builtin.yum:
+        name: policycoreutils-python
+        state: latest   
+
+    - name: Allow rsyslog to listen on tcp port 514
+      community.general.seport:
+        ports: 514
+        proto: tcp
+        setype: syslogd_port_t
+        state: present
+
+    - name: Allow rsyslog to listen on udp port 514
+      community.general.seport:
+        ports: 514
+        proto: udp
+        setype: syslogd_port_t
+        state: present
+
+    - name: Копируем измененный rsyslog.conf
+      ansible.builtin.copy:
+        src: rsyslog_server.conf
+        dest: /etc/rsyslog.conf
+
+    - name: Перезапускаем сервис rsyslog
+      ansible.builtin.service:
+        name: rsyslog
+        state: restarted

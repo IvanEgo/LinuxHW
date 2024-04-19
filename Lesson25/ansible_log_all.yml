@@ -1,0 +1,18 @@
+- name: Настройка клиента, отправляеющего на сервер все логи
+  hosts: log-all
+  become: yes
+  tasks:
+    - name: Устанавливаем rsyslog
+      ansible.builtin.yum:
+        name: rsyslog
+        state: latest
+
+    - name: Копируем rsyslog_all.conf
+      ansible.builtin.copy:
+        src: rsyslog_all.conf
+        dest: /etc/rsyslog.d/all.conf
+
+    - name: Перезапускаем сервис rsyslog
+      ansible.builtin.service:
+        name: rsyslog
+        state: restarted

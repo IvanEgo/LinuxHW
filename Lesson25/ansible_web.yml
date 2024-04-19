@@ -1,0 +1,31 @@
+- name: Установка и настройка nginx 
+  hosts: web
+  become: yes
+  tasks:
+    - name: Устанавливаем rsyslog
+      ansible.builtin.yum:
+        name: rsyslog
+        state: latest
+
+    - name: Добавляем epel-release repo
+      yum:
+        name: epel-release
+        state: latest
+
+    - name: Устанавливаем nginx
+      ansible.builtin.yum:
+        name: nginx
+        state: latest
+
+    - name: Копируем измененный nginx.conf
+      ansible.builtin.copy:
+        src: nginx.conf
+        dest: /etc/nginx/nginx.conf
+
+    - name: Запускаем сервис nginx
+      ansible.builtin.service:
+        name: nginx
+        state: started
+
+
+        
