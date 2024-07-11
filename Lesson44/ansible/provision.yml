@@ -1,0 +1,32 @@
+- name: Настройка серверов
+  hosts: all
+  become: yes
+  tasks:
+  - name: Install the Percona yum repository
+    yum: 
+      name: https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+      disable_gpg_check: yes
+      state: present
+
+  - name: percona-release setup ps57
+    shell: percona-release setup ps57
+
+  - name: Install Percona Server for MySQL 5.7
+    yum: 
+      name: Percona-Server-server-57
+      state: present
+      update_cache: true
+
+  - name: Настраиваем конфиги mysqld.cnf
+    copy: 
+      src: templates/{{ ansible_hostname }}.cnf
+      dest: /etc/my.cnf.d/mysqld.cnf
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: Запускаем MySQL сервис
+    service:
+      name: mysqld 
+      state: started 
+      enabled: true
