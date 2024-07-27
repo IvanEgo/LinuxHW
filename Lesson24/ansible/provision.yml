@@ -1,0 +1,30 @@
+- name: Настройка сервера
+  hosts: pam
+  become: yes
+  tasks:
+    - name: Создание группы admim
+      ansible.builtin.group:
+        name: admin
+        state: present
+  
+    - name: Создание пользователя otusadm
+      ansible.builtin.user:
+        name: otusadm
+        password: "$6$bHYP8c3O.rq5aFkD$pav9SVVdtopYxyFTe5GsyeWbfP9AoxSIxQm8N9lSa3G0bFCC38Zn.xNgdNeweOQ2sWAGhjxdid0dthN8kNkfN."
+        groups: admin
+
+    - name: Создание пользователя otus
+      ansible.builtin.user:
+        name: otus
+        password: "$6$bHYP8c3O.rq5aFkD$pav9SVVdtopYxyFTe5GsyeWbfP9AoxSIxQm8N9lSa3G0bFCC38Zn.xNgdNeweOQ2sWAGhjxdid0dthN8kNkfN."
+
+    - name: Копируем скрипт в /usr/local/bin/login.sh
+      ansible.builtin.copy:
+        src: login.sh
+        dest: /usr/local/bin/login.sh
+        mode: u+x,g+x,o+x
+
+    - name: Копируем файл настроек PAM для sshd, включающий вызов скрипта из pam_exec
+      ansible.builtin.copy:
+        src: sshd
+        dest: /etc/pam.d/sshd
