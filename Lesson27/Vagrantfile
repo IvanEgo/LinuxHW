@@ -1,0 +1,56 @@
+# -*- mode: ruby -*- 
+# vi: set ft=ruby : vsa
+boxes = [
+  { :name => "backup",
+    :ip => "192.168.56.160",
+    :disks => {
+      :sata1 => {
+        :dfile => './sata1.vdi',
+        :size => 20 * 1024,
+        :port => 1
+      },
+    }
+  },
+  { :name => "client",
+    :ip => "192.168.56.150",
+    :disks => {}
+  }
+]
+
+Vagrant.configure(2) do |config|  
+  boxes.each do |opts|
+    config.vm.define opts[:name] do |box|
+      box.vm.box = "generic/ubuntu2204"
+
+      box.vm.hostname = opts[:name]
+      box.vm.network "private_network", ip: opts[:ip], virtualbox__intnet: "MyNetwork"
+
+      box.vm.provider "virtualbox" do |vb|
+        vb.memory = 1024
+        vb.cpus = 1
+
+        needsController = false
+        opts[:disks].each do |dname, dconf|
+          unless File.exist?(dconf[:dfile])
+            vb.customize ['createhd', '--filename', dconf[:dfile], '--variant', 'Fixed', '--size', dconf[:size]]
+            needsController = true
+          end
+        end
+        if needsController == true
+          opts[:disks].each do |dname, dconf|
+            vb.customize ['storageattach', :id,  '--storagectl', 'SATA Controller', '--port', dconf[:port], '--device', 0, '--type', 'hdd', '--medium', dconf[:dfile]]
+          end
+        end
+      end
+
+      # Запуск ansible-playbook
+      if opts[:name] == "client"
+        box.vm.provision "ansible" do |ansible|
+          ansible.playbook = "ansible/provision.yml"
+          ansible.host_key_checking = false
+          ansible.limit = "all"
+        end
+      end
+    end
+  end
+end

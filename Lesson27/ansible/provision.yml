@@ -1,0 +1,97 @@
+- name: Устанавливаем borgbackup
+  hosts: all
+  become: yes
+  tasks:
+    - name: Устанавливаем borgbackup
+      ansible.builtin.apt:
+        name: borgbackup
+        state: present
+
+- name: Настройка backup сервера 
+  hosts: backup
+  become: yes
+  tasks:
+    - name: Создаем файловую систему на дополнительном диске 20 Gb
+      community.general.filesystem:
+        fstype: ext4
+        dev: /dev/sdb
+
+    - name: Монтируем файловую систему
+      ansible.posix.mount:
+        path: "/var/backup/"
+        src: "/dev/sdb"
+        fstype: ext4
+        state: mounted
+
+    - name: Создаем группу borg
+      ansible.builtin.group:
+        name: borg
+        state: present
+
+    - name: Создаем пользователя borg
+      ansible.builtin.user:
+        name: borg
+        group: borg
+
+    - name: Создаем директорию /var/backup/
+      file: 
+        path: "/var/backup/"
+        state: directory
+        owner: borg
+        group: borg
+
+    - name: Удаляем lost+found
+      file:
+        path: "/var/backup/lost+found/"
+        state: absent
+
+- name: Настройка клиента
+  hosts: client
+  become: yes
+  tasks:  
+    - name: Генерируем пару ключей SSH
+      openssh_keypair:
+        path: /root/.ssh/id_ed25519
+        type: ed25519
+        owner: root
+      register: result
+
+    - name: Добавляем public key в authorized_keys на сервере backup
+      ansible.posix.authorized_key:
+        user: borg
+        key: "{{ result.public_key }}"
+        state: present
+      delegate_to: backup
+  
+    - name: Добавляем сервер backup в список known_hosts
+      shell: ssh-keyscan -H 192.168.56.160 >> /root/.ssh/known_hosts
+
+    - name: Инициализируем репозиторий borg на backup сервере с client сервера
+      ansible.builtin.shell: borg init --encryption=repokey
+      environment:
+        BORG_REPO: 'borg@192.168.56.160:/var/backup/'
+        BORG_PASSPHRASE: 'Otus1234'
+      #when: result.rc == 2
+      register: result
+      changed_when: result.rc == 0
+      failed_when: result.rc == 2 and 'A repository already exists at' not in result.stderr or result.rc != 2 and result.rc != 0
+
+    - name: Создаем юнит для borg-backup сервиса
+      ansible.builtin.copy:
+        src: borg-backup.service
+        dest: /etc/systemd/system/borg-backup.service
+
+    - name: Создаем юнит для borg-backup таймера
+      ansible.builtin.copy:
+        src: borg-backup.timer
+        dest: /etc/systemd/system/borg-backup.timer
+
+    - name: Reload systemd daemon
+      systemd:
+        daemon_reload: yes
+
+    - name: Запускаем таймер
+      ansible.builtin.service:
+        name: borg-backup.timer
+        state: started
+        
