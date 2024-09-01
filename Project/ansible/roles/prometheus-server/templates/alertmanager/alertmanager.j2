@@ -1,0 +1,13 @@
+route:
+  receiver: 'gmail-notifications'
+
+receivers:
+- name: 'gmail-notifications'
+  email_configs:
+  - to: ivan.egorov@gmail.com
+    from: ivan.egorov@gmail.com
+    smarthost: smtp.gmail.com:587
+    auth_username: ivan.egorov@gmail.com
+    auth_identity: ivan.egorov@gmail.com
+    auth_password: xxx
+    send_resolved: true

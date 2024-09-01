@@ -1,0 +1,24 @@
+  - name: Устанавливаем rsyslog
+    ansible.builtin.yum:
+      name: rsyslog
+      state: present
+
+  - name: Устанавливаем chrony
+    ansible.builtin.yum:
+      name: chrony
+      state: latest
+
+  - name: Запускаем сервис chronyd
+    ansible.builtin.service:
+      name: chronyd
+      state: started
+
+  - name: Копируем измененный rsyslog.conf
+    ansible.builtin.copy:
+      src: rsyslog_server.conf
+      dest: /etc/rsyslog.conf
+
+  - name: Перезапускаем сервис rsyslog
+    ansible.builtin.service:
+      name: rsyslog
+      state: restarted

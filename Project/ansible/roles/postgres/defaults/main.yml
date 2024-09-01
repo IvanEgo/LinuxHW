@@ -1,0 +1,10 @@
+---
+# defaults file for postgres_replication
+replicator_password: 'Otus2024!'
+master_ip: '192.168.57.5'
+slave_ip: '192.168.57.6'
+backend1_ip: '192.168.57.3'
+backend2_ip: '192.168.57.4'
+zabbix_ip: '192.168.57.10'
+zabbix_user: 'zabbix'
+zabbix_password: 'Otus2024!'

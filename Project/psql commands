@@ -1,0 +1,21 @@
+sudo -u postgres psql
+
+CREATE DATABASE otus;
+
+\c otus;
+
+CREATE TABLE lessons (
+  lesson_id SERIAL PRIMARY KEY, 
+  name VARCHAR (50) UNIQUE NOT NULL, 
+  description VARCHAR (1000) NOT NULL
+);
+
+INSERT INTO lessons (name, description) VALUES
+('Занятие 1', 'Vagrant'),
+('Занятие 2', 'Ansible'),
+('Занятие 3', 'Дисковая подсистема'),
+('Занятие 4', 'Файловые системы и LVM');
+
+CREATE USER myotusapp WITH PASSWORD 'Otus12345';
+
+GRANT ALL PRIVILEGES ON TABLE lessons TO myotusapp;

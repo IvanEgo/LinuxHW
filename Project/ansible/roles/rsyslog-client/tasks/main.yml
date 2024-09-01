@@ -1,0 +1,14 @@
+  - name: Устанавливаем rsyslog
+    ansible.builtin.yum:
+      name: rsyslog
+      state: present
+
+  - name: Копируем rsyslog_all.conf
+    ansible.builtin.copy:
+      src: rsyslog_all.conf
+      dest: /etc/rsyslog.d/all.conf
+
+  - name: Перезапускаем сервис rsyslog
+    ansible.builtin.service:
+      name: rsyslog
+      state: restarted

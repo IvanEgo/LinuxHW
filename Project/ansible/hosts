@@ -1,0 +1,15 @@
+[web]
+frontend ansible_host=192.168.57.2 ansible_user=vagrant ansible_private_key_file=.vagrant/machines/frontend/virtualbox/private_key
+backend1 ansible_host=192.168.57.3 ansible_user=vagrant ansible_private_key_file=.vagrant/machines/backend1/virtualbox/private_key
+backend2 ansible_host=192.168.57.4 ansible_user=vagrant ansible_private_key_file=.vagrant/machines/backend2/virtualbox/private_key
+
+[postgres]
+postgres1 ansible_host=192.168.57.5 ansible_user=vagrant ansible_ssh_private_key_file=./.vagrant/machines/postgres1/virtualbox/private_key 
+postgres2 ansible_host=192.168.57.6 ansible_user=vagrant ansible_ssh_private_key_file=./.vagrant/machines/postgres2/virtualbox/private_key 
+barman ansible_host=192.168.57.7 ansible_user=vagrant ansible_ssh_private_key_file=./.vagrant/machines/barman/virtualbox/private_key
+
+[logging]
+rsyslog ansible_host=192.168.57.8 ansible_user=vagrant ansible_ssh_private_key_file=./.vagrant/machines/rsyslog/virtualbox/private_key 
+
+[monitoring]
+prometheus ansible_host=192.168.57.10 ansible_user=vagrant ansible_private_key_file=.vagrant/machines/prometheus/virtualbox/private_key

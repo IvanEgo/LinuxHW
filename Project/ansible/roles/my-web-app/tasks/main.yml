@@ -1,0 +1,27 @@
+---
+  - name: Устанавливаем .NET 8 runtime
+    ansible.builtin.apt: 
+      name: aspnetcore-runtime-8.0
+      state: present
+      update_cache: yes
+
+  - name: Копируем файлы web приложения на хост
+    ansible.builtin.copy:
+      src: MyOtusApp/
+      dest: /var/www/app/
+      mode: 0755
+  
+  - name: Создаем systemd юнит сервиса для запуска приложения через systemd
+    ansible.builtin.copy:
+      src: my-otus-app.service
+      dest: /etc/systemd/system/my-otus-app.service
+  
+  - name: Reload systemd daemon
+    systemd:
+      daemon_reload: yes
+
+  - name: Перезапускаем сервис
+    ansible.builtin.service:
+      name: my-otus-app
+      state: restarted
+      enabled: yes

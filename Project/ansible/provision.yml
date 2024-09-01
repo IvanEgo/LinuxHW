@@ -1,0 +1,59 @@
+# Устанавливаем и настраиваем nginx
+- name: install nginx
+  hosts: frontend
+  become: yes
+  roles:
+  - nginx
+
+# Разворачиваем web-приложение на бэкенды
+- name: run my app
+  hosts: backend1,backend2
+  become: yes
+  roles:
+  - my-web-app
+
+# Устанавливаем PostgreSQL и настраиваем репликацию
+- name: install postgres 14 and set up replication
+  hosts: postgres1,postgres2
+  become: yes
+  roles:
+  - postgres
+
+# Настраиваем бэкапирование базы данных
+- name: set up backup
+  hosts: postgres1,postgres2,barman
+  become: yes
+  roles:
+  - barman
+
+# Настраиваем сбор логов
+- name: set up logging server
+  hosts: rsyslog
+  become: yes
+  roles:
+  - rsyslog-server
+
+- name: set up logging clients
+  hosts: all
+  become: yes
+  roles:
+  - rsyslog-client
+
+# Настраиваем сервер Prometheus
+- name: Настройка сервера Prometheus
+  hosts: prometheus
+  become: yes
+  tags:
+    - monitoring
+  roles:
+    - docker-host
+    - prometheus-server
+
+# Устанавливаем Node Exporters на все хосты
+- name: Установка Node Exporters
+  hosts: all
+  become: yes
+  tags:
+    - monitoring
+  roles:
+    - prometheus-node-exporter

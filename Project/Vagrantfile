@@ -1,0 +1,86 @@
+# Описание параметров ВМ
+MACHINES = {
+  :frontend => {
+        :box_name => "generic/ubuntu2204",
+        :vm_name => "frontend",
+        :cpus => 1,
+        :memory => 1024,
+        :ip => "192.168.57.2",
+  },
+  :backend1 => {
+        :box_name => "generic/ubuntu2204",
+        :vm_name => "backend1",
+        :cpus => 1,
+        :memory => 1024,
+        :ip => "192.168.57.3",
+  },
+  :backend2 => {
+        :box_name => "generic/ubuntu2204",
+        :vm_name => "backend2",
+        :cpus => 1,
+        :memory => 1024,
+        :ip => "192.168.57.4",
+  },
+  :postgres1 => {
+        :box_name => "generic/ubuntu2204",
+        :vm_name => "postgres1",
+        :cpus => 1,
+        :memory => 1024,
+        :ip => "192.168.57.5",
+  },
+  :postgres2 => {
+        :box_name => "generic/ubuntu2204",
+        :vm_name => "postgres2",
+        :cpus => 1,
+        :memory => 1024,
+        :ip => "192.168.57.6",
+  },
+  :barman => {
+        :box_name => "generic/ubuntu2204",
+        :vm_name => "barman",
+        :cpus => 1,
+        :memory => 1024,
+        :ip => "192.168.57.7",
+  },
+  :rsyslog => {
+        :box_name => "generic/ubuntu2204",
+        :vm_name => "rsyslog",
+        :cpus => 1,
+        :memory => 512,
+        :ip => "192.168.57.8",
+  },
+  :prometheus => {
+      :box_name => "generic/ubuntu2204",
+      :vm_name => "prometheus",
+      :cpus => 1,
+      :memory => 1024,
+      :ip => "192.168.57.10"
+  }
+}
+
+Vagrant.configure("2") do |config|
+
+  MACHINES.each do |boxname, boxconfig|
+    
+    config.vm.define boxname do |box|
+   
+      box.vm.box = boxconfig[:box_name]
+      box.vm.host_name = boxconfig[:vm_name]
+      box.vm.network "private_network", ip: boxconfig[:ip]
+      box.vm.provider "virtualbox" do |v|
+        v.memory = boxconfig[:memory]
+        v.cpus = boxconfig[:cpus]
+      end
+
+      # Запуск ansible-playbook
+      if boxconfig[:vm_name] == "prometheus"
+       box.vm.provision "ansible" do |ansible|
+        ansible.playbook = "ansible/provision.yml"
+        ansible.inventory_path = "ansible/hosts"
+        ansible.host_key_checking = false
+        ansible.limit = "all"
+       end
+      end
+    end
+  end
+end

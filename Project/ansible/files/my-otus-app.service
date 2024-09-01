@@ -1,0 +1,18 @@
+[Unit]
+Description=ASP.NET Core Web App running on Ubuntu
+
+[Service]
+WorkingDirectory=/var/www/app
+ExecStart=/usr/bin/dotnet /var/www/app/MyOtusApp.dll
+Restart=always
+
+# Restart service after 10 seconds if the dotnet service crashes:
+RestartSec=10
+KillSignal=SIGINT
+SyslogIdentifier=dotnet-web-app
+
+# This user should exist on the server and have ownership of the deployment directory
+User=www-data
+Environment=ASPNETCORE_ENVIRONMENT=Production
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,30 @@
+# {{ ansible_managed }}
+events {
+    worker_connections 1024;
+}
+
+http {
+    upstream backend {
+        server 192.168.57.3:5000;
+        server 192.168.57.4:5000;
+    }
+
+    server {
+        listen 80;
+        server_name  default_server;
+        location / {
+            proxy_pass http://backend;
+        }
+    }
+
+    server {
+        listen 443 ssl;
+        server_name  myotusapp;
+        ssl_certificate     /etc/pki/nginx/nginx.crt;
+        ssl_certificate_key /etc/pki/nginx/nginx.key;
+        ssl_protocols       TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
+        location / {
+            proxy_pass http://backend;
+        }
+    }
+}

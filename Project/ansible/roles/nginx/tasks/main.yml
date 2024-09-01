@@ -1,0 +1,47 @@
+---
+  - name: update cache
+    ansible.builtin.apt:
+      update_cache=yes
+    tags:
+      - nginx
+  
+  - name: NGINX | Install NGINX
+    ansible.builtin.apt:
+      name: nginx
+      state: present
+    notify:
+      - "nginx : restart"
+    tags:
+      - nginx
+
+  - name: NGINX | Create NGINX config file from template
+    ansible.builtin.template:
+      src: templates/nginx.conf.j2
+      dest: /etc/nginx/nginx.conf
+    notify:
+      - "nginx : reload"
+    tags:
+      - nginx
+
+  - name: Create /etc/pki/nginx/ directory
+    ansible.builtin.file:
+      path: /etc/pki/nginx/
+      state: directory
+
+  - name: NGINX | Copy ssl certificate
+    ansible.builtin.copy:
+      src: nginx.crt
+      dest: /etc/pki/nginx/nginx.crt
+    notify:
+      - "nginx : reload"
+    tags:
+      - nginx
+
+  - name: NGINX | Copy private key
+    ansible.builtin.copy:
+      src: nginx.key
+      dest: /etc/pki/nginx/nginx.key
+    notify:
+      - "nginx : reload"
+    tags:
+      - nginx
