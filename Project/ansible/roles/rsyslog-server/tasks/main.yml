@@ -1,10 +1,10 @@
   - name: Устанавливаем rsyslog
-    ansible.builtin.yum:
+    ansible.builtin.apt:
       name: rsyslog
       state: present
 
   - name: Устанавливаем chrony
-    ansible.builtin.yum:
+    ansible.builtin.apt:
       name: chrony
       state: latest
 

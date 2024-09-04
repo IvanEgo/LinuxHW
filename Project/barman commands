@@ -1,0 +1,13 @@
+barman check postgres1
+
+barman backup postgres1
+
+barman list-backup postgres1
+barman recover postgres1 20240904T135623 /var/lib/postgresql/14/main/ --remote-ssh-command "ssh postgres@192.168.57.5"
+
+sudo systemctl restart postgresql
+
+sudo -u barman barman switch-xlog --force --archive postgres1
+
+
+sudo cat /var/log/rsyslog/backend1/dotnet-web-app.log

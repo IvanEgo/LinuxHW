@@ -16,4 +16,7 @@ https://myotusapp/
 Prometheus:  
 http://192.168.57.10:9090/targets?search=
 
+Grafana:
+http://192.168.57.10:3000
+
 

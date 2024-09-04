@@ -11,7 +11,7 @@
       state: present
       update_cache: true
 
-  #  Установка пакетов barman и postgresql-client на сервер barman 
+  # Установка пакетов barman и postgresql-client на сервер barman 
   - name: install barman and postgresql packages on barman
     apt:
       name:
@@ -22,7 +22,7 @@
       update_cache: true
     when: (ansible_hostname == "barman")
 
- #  Установка пакетов barman-cli на серверах postgres1 и postgres2 
+  # Установка пакетов barman-cli на серверах postgres1 и postgres2 
   - name: install barman-cli and postgresql packages on nodes
     apt:
       name:
@@ -31,7 +31,7 @@
       update_cache: true
     when: (ansible_hostname != "barman")
 
-#  Генерируем SSH-ключ для пользователя postgres на хосте postgres1
+  # Генерируем SSH-ключ для пользователя postgres на хосте postgres1
   - name: generate SSH key for postgres
     user:
       name: postgres
@@ -41,7 +41,7 @@
       force: no
     when: (ansible_hostname == "postgres1")
  
-#  Генерируем SSH-ключ для пользователя barman на хосте barman
+  # Генерируем SSH-ключ для пользователя barman на хосте barman
   - name: generate SSH key for barman
     user:
       name: barman
@@ -53,13 +53,13 @@
       force: no
     when: (ansible_hostname == "barman")
 
-  #  Забираем содержимое открытого ключа postgres c хоста postgres1
+  # Забираем содержимое открытого ключа postgres c хоста postgres1
   - name: fetch all public ssh keys postgres1
     shell: cat /var/lib/postgresql/.ssh/id_rsa.pub
     register: ssh_keys
     when: (ansible_hostname == "postgres1")
 
-  #  Копируем ключ с barman на postgres1
+  # Копируем ключ с barman на postgres1
   - name: transfer public key to barman
     delegate_to: barman
     authorized_key:
@@ -68,13 +68,13 @@
       user: barman
     when: (ansible_hostname == "postgres1")
 
-  #  Забираем содержимое открытого ключа barman c хоста barman 
+  # Забираем содержимое открытого ключа barman c хоста barman 
   - name: fetch all public ssh keys barman
     shell: cat /var/lib/barman/.ssh/id_rsa.pub
     register: ssh_keys
     when: (ansible_hostname == "barman")
 
- #  Копируем ключ с postgres1 на barman
+  # Копируем ключ с postgres1 на barman
   - name: transfer public key to barman
     delegate_to: postgres1
     authorized_key:
@@ -83,7 +83,7 @@
       user: postgres
     when: (ansible_hostname == "barman")
 
-  #CREATE USER barman SUPERUSER;
+  # CREATE USER barman SUPERUSER;
   - name: Create barman user
     become_user: postgres
     postgresql_user:
@@ -111,25 +111,6 @@
       state: restarted
     when: (ansible_hostname == "postgres1")
 
-  # Создаём БД otus;
-  - name: Create DB for backup
-    become_user: postgres
-    postgresql_db:
-      name: otus
-      encoding: UTF-8
-      template: template0
-      state: present
-    when: (ansible_hostname == "postgres1")
-
-  # Создаем таблицу test1 в БД otus;
-  - name: Add tables to otus_backup
-    become_user: postgres
-    postgresql_table:
-      db: otus
-      name: test1
-      state: present
-    when: (ansible_hostname == "postgres1")
-
   # Копируем файл .pgpass
   - name: copy .pgpass
     template:
@@ -150,7 +131,7 @@
       mode: '0755'
     when: (ansible_hostname == "barman")
 
- # Копируем файл postgres1.conf
+  # Копируем файл postgres1.conf
   - name: copy postgres1.conf
     template:
       src: postgres1.conf.j2
@@ -160,12 +141,27 @@
       mode: '0755'
     when: (ansible_hostname == "barman")
 
+  # barman switch-wal
   - name: barman switch-wal postgres1
     become_user: barman
     shell: barman switch-wal postgres1
     when: (ansible_hostname == "barman")
 
+  # barman cron
   - name: barman cron
     become_user: barman
     shell: barman cron
     when: (ansible_hostname == "barman")
+    
+  # barman switch-wal
+  - name: barman switch-xlog --force --archive postgres1 
+    become_user: barman
+    shell: barman switch-xlog --force --archive postgres1 
+    when: (ansible_hostname == "barman")
+    
+  # Добавляем barman в cron
+  - name: Add barman to cron
+    lineinfile:
+      path: /etc/cron.d/barman
+      line: '*/15 * * * * barman barman backup postgres1 --wait'
+    when: ansible_hostname == "barman"

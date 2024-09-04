@@ -113,3 +113,26 @@
       name: postgresql
       state: started
     when: (ansible_hostname == "postgres2")
+
+  # Создаём базу otus;
+  - name: Create DB otus
+    become_user: postgres
+    postgresql_db:
+      name: otus
+      encoding: UTF-8
+      template: template0
+      state: present
+    when: (ansible_hostname == "postgres1")
+
+  # Создаем таблицу lessons;
+  - name: Add table lessons to otus
+    become_user: postgres
+    postgresql_table:
+      db: otus
+      name: lessons
+      columns:
+      - lesson_id serial primary key
+      - name VARCHAR (50) UNIQUE NOT NULL
+      - description VARCHAR (1000) NOT NULL
+      state: present
+    when: (ansible_hostname == "postgres1")

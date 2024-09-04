@@ -4,21 +4,21 @@ MACHINES = {
         :box_name => "generic/ubuntu2204",
         :vm_name => "frontend",
         :cpus => 1,
-        :memory => 1024,
+        :memory => 768,
         :ip => "192.168.57.2",
   },
   :backend1 => {
         :box_name => "generic/ubuntu2204",
         :vm_name => "backend1",
         :cpus => 1,
-        :memory => 1024,
+        :memory => 768,
         :ip => "192.168.57.3",
   },
   :backend2 => {
         :box_name => "generic/ubuntu2204",
         :vm_name => "backend2",
         :cpus => 1,
-        :memory => 1024,
+        :memory => 768,
         :ip => "192.168.57.4",
   },
   :postgres1 => {
@@ -46,7 +46,7 @@ MACHINES = {
         :box_name => "generic/ubuntu2204",
         :vm_name => "rsyslog",
         :cpus => 1,
-        :memory => 512,
+        :memory => 768,
         :ip => "192.168.57.8",
   },
   :prometheus => {

@@ -19,3 +19,6 @@ INSERT INTO lessons (name, description) VALUES
 CREATE USER myotusapp WITH PASSWORD 'Otus12345';
 
 GRANT ALL PRIVILEGES ON TABLE lessons TO myotusapp;
+
+
+select pg_promote();

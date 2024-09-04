@@ -1,10 +1,10 @@
   - name: Устанавливаем rsyslog
-    ansible.builtin.yum:
+    ansible.builtin.apt:
       name: rsyslog
       state: present
 
   - name: Копируем rsyslog_all.conf
-    ansible.builtin.copy:
+    ansible.builtin.template:
       src: rsyslog_all.conf
       dest: /etc/rsyslog.d/all.conf
 

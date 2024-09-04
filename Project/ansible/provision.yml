@@ -19,7 +19,7 @@
   roles:
   - postgres
 
-# Настраиваем бэкапирование базы данных
+# Настраиваем резервное копирование базы данных
 - name: set up backup
   hosts: postgres1,postgres2,barman
   become: yes
