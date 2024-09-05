@@ -152,8 +152,8 @@
     become_user: barman
     shell: barman cron
     when: (ansible_hostname == "barman")
-    
-  # barman switch-wal
+
+  # barman switch-xlog
   - name: barman switch-xlog --force --archive postgres1 
     become_user: barman
     shell: barman switch-xlog --force --archive postgres1 

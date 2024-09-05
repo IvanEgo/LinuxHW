@@ -34,7 +34,7 @@
   - rsyslog-server
 
 - name: set up logging clients
-  hosts: all
+  hosts: frontend,backend1,backend2,postgres1,postgres2,barman
   become: yes
   roles:
   - rsyslog-client
